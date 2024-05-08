@@ -10,10 +10,10 @@ interface IERC20 {
 
 contract VotingBox is Ownable {
 
-    address[] voterList; // 조회용
-    mapping (uint => uint256[2]) mataAddressTable; // 후보자 번호 -> 메타 address 얻기
-    mapping (uint => uint) studentSaltTable; // 학번에 대한 salt 해시값 테이블
-    mapping (uint => address) addressTable; // 해시값을 통해 주소를 기록
+    address[] public voterList; // 조회용
+    mapping (uint => uint256[2]) public mataAddressTable; // 후보자 번호 -> 메타 address 얻기
+    mapping (uint => uint) public studentSaltTable; // 학번에 대한 salt 해시값 테이블
+    mapping (uint => address) public addressTable; // 해시값을 통해 주소를 기록
     IERC20 public token;
 
     constructor(address initialOwner, address tokenAddress) Ownable(initialOwner) {
