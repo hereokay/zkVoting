@@ -4,18 +4,31 @@ const { ethers } = require("ethers");
 
 
 
-describe("VotingBox contract deployment", function () {
+describe("contract deployment", function () {
     let token, votingBox;
     let owner, addr1, addr2;
   
+    let hasher, verifier, tornado;
 
     before(async function () {
         [owner, addr1, addr2] = await hre.ethers.getSigners();
 
         // 투표토큰 배포
         token = await hre.ethers.deployContract("Token");
+        console.log("Token address: ", token.target);
         // 투표관리 컨트랙트 배포
         votingBox = await hre.ethers.deployContract("VotingBox",[owner.address,token.target]);
+        console.log("VotingBox address: ", votingBox.target);
+
+        hasher = await hre.ethers.deployContract("Hasher");
+        console.log("Hasher address: ", hasher.target);
+
+        verifier = await hre.ethers.deployContract("Verifier");
+        console.log("Verifier address: ", verifier.target);
+
+        tornado = await hre.ethers.deployContract("Tornado", [hasher.target, verifier.target]);
+        console.log("Tornado address: ", tornado.target);
+
     });
 
     describe("Token", function () {
@@ -37,6 +50,10 @@ describe("VotingBox contract deployment", function () {
             // 조회
             await expect(await token.balanceOf(addr1.address)).to.equal(ethers.parseEther("1"));
         });
+
+        
+        
+
         
 
         
