@@ -1,11 +1,14 @@
 const { expect } = require("chai");
 const hre = require("hardhat");
+const { ethers } = require("ethers");
 
 
 
 describe("VotingBox contract deployment", function () {
   let token, votingBox;
   let owner, addr1, addr2;
+  
+
 
   beforeEach(async function () {
     [owner, addr1, addr2] = await hre.ethers.getSigners();
@@ -20,8 +23,11 @@ describe("VotingBox contract deployment", function () {
   describe("Token interactions", function () {
     it("should allow VotingBox to call mint on the Token contract", async function () {
       // Example interaction
-      await token.mint(addr1.address, 1000);
-      expect(await token.balanceOf(addr1.address)).to.equal(1000);
+
+
+      await token.mint(addr1.address, ethers.parseEther("1"));
+      expect(await token.balanceOf(addr1.address)).to.equal(ethers.parseEther("1"));
+      
     });
     
   });
