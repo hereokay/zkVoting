@@ -28,6 +28,18 @@ describe("VotingBox contract deployment", function () {
             await expect(token.mint(addr1.address, ethers.parseEther("1")))
             .to.be.revertedWith("Sender not authorized.");  
         });
+
+        it("유권자에게 토큰 할당", async function () {
+
+            // 투표권 할당 
+            await votingBox.registVoter(addr1.address, 1);
+            
+            // 조회
+            await expect(await token.balanceOf(addr1.address)).to.equal(ethers.parseEther("1"));
+        });
+        
+
+        
     });
 
 });
