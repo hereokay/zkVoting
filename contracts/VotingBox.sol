@@ -37,6 +37,7 @@ contract VotingBox is Ownable {
     }
 
     // 유권자 주소 할당
+    // hashValue = StudentId + Salt 에 대한 Hash
     function registVoter(address voterAddress, uint hashValue) external onlyOwner {
         addressTable[hashValue] = voterAddress;
         voterList.push(voterAddress);
@@ -62,6 +63,7 @@ contract VotingBox is Ownable {
     // 투표 결과 조회 함수 
     
 
+// 이벤트 설정
 
 
 
