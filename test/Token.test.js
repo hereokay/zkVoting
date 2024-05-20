@@ -1,9 +1,12 @@
 const { expect } = require("chai");
 const hre = require("hardhat");
 const { ethers } = require("ethers");
+const path = require('path');
+const fs = require('fs').promises;
 
 
-
+const $u = require("../zkp/$u.js");
+const wc = require("../zkp/witness_calculator.js");
 
 
 
@@ -24,7 +27,7 @@ describe("contract deployment", function () {
     let hasher, verifier, tornado;
 
     before(async function () {
-        [owner, addr1, addr2] = await hre.ethers.getSigners();
+        [owner, addr1, addr2, layer] = await hre.ethers.getSigners();
 
         // 투표토큰 배포
         token = await hre.ethers.deployContract("Token");
@@ -43,6 +46,7 @@ describe("contract deployment", function () {
         console.log("Tornado address: ", tornado.target);
 
     });
+    
     it("VotingBox에게 mint 권한부여", async function () {
         await token.setOwner(votingBox.target);
         expect(await token.owner()).to.equal(votingBox.target);
@@ -105,26 +109,45 @@ describe("contract deployment", function () {
         });
 
         describe("투표 과정 : Mixer와 상호작용", function () {
-            
-            // Mixer에 입금
-            it("Mixer Deposit : Mixer의 토큰 개수는 1ETH $Token 여야 함", async function () {
 
+            const secret = 52504989698815656670467745566334466022085983891456311677952804444298590744987n;
+            const nullifier = 64031490081816010444713942260610553476305603455351795335443366004069767515653n;
+
+            // Mixer에 입금
+            it("Mixer Deposit : Mixer의 토큰 개수는 1 ETH, 유권자 0 ETH", async function () {
+                
+                // approve
                 const approveTx = await token.connect(addr1).approve(tornado.target, ethers.parseEther("1"));
 
-                // addr1 가 mixer에게 입금
-                const commitment = BigInt("0x16e4575a8db3a0de3aa73d3d7a2e70e362c0819d513bbfe441795fa1fa3f439e");
-                console.log()
-                const tx = await tornado.connect(addr1).deposit(commitment, token.target);
+                const input = {
+                    secret: $u.BN256ToBin(secret).split(""),
+                    nullifier: $u.BN256ToBin(nullifier).split("")
+                };
 
-                console.log(tx);
-
-                await expect(await token.balanceOf(addr1.address)).to.equal(ethers.parseEther("0"));
-                await expect(await token.balanceOf(tornado.target)).to.equal(ethers.parseEther("1"));
-
+                const filePath = path.join(__dirname, '../zkp/deposit.wasm');
+                const buffer = await fs.readFile(filePath);
+        
+                // buffer를 사용하여 depositWC를 처리
+                const depositWC = await wc(buffer);
+        
+                const r = await depositWC.calculateWitness(input, 0);
+                
+                const commitment = r[1];
+                const nullifierHash = r[2];
+                
+                const depositTx = await tornado.connect(addr1).deposit(commitment,token.target);
+                
+                const proofElements = {
+                    nullifierHash: nullifierHash,
+                    secret: secret,
+                    nullifier: nullifier,
+                    commitment: commitment,
+                    txHash: depositTx.hash
+                };
+                
             });
 
-            it("Mixer Withdraw : Mixer의 토큰 개수는 0 $Token 여야 함", async function () {
-                
+            it("Mixer Withdraw : Mixer의 토큰 개수는 0 ETH, 후보자는 1 ETH", async function () {
                 
             });
 
