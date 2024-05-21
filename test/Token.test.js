@@ -111,9 +111,9 @@ describe("contract deployment", function () {
 
         describe("투표 과정 : Mixer와 상호작용", function () {
 
-            const secret = 52504989698815656670467745566334466022085983891456311677952804444298590744987n;
-            const nullifier = 64031490081816010444713942260610553476305603455351795335443366004069767515653n;
-            
+            const secret = BigInt(ethers.hexlify(ethers.randomBytes(32)))
+            const nullifier = BigInt(ethers.hexlify(ethers.randomBytes(32)))
+
             let proofElements ;
 
             // Mixer에 입금
