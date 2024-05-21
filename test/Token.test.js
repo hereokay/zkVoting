@@ -3,6 +3,7 @@ const hre = require("hardhat");
 const { ethers } = require("ethers");
 const path = require('path');
 const fs = require('fs').promises;
+const SnarkJS = require("snarkjs");
 
 
 const $u = require("../zkp/$u.js");
@@ -22,12 +23,12 @@ function calcStudentSaltHash(studentId, salt){
 
 describe("contract deployment", function () {
     let token, votingBox;
-    let owner, addr1, addr2;
+    let owner, addr1, addr2, layer, candidate;
   
     let hasher, verifier, tornado;
 
     before(async function () {
-        [owner, addr1, addr2, layer] = await hre.ethers.getSigners();
+        [owner, addr1, addr2, layer, candidate] = await hre.ethers.getSigners();
 
         // 투표토큰 배포
         token = await hre.ethers.deployContract("Token");
@@ -112,6 +113,8 @@ describe("contract deployment", function () {
 
             const secret = 52504989698815656670467745566334466022085983891456311677952804444298590744987n;
             const nullifier = 64031490081816010444713942260610553476305603455351795335443366004069767515653n;
+            
+            let proofElements ;
 
             // Mixer에 입금
             it("Mixer Deposit : Mixer의 토큰 개수는 1 ETH, 유권자 0 ETH", async function () {
@@ -137,18 +140,66 @@ describe("contract deployment", function () {
                 
                 const depositTx = await tornado.connect(addr1).deposit(commitment,token.target);
                 
-                const proofElements = {
+                proofElements = {
                     nullifierHash: nullifierHash,
                     secret: secret,
                     nullifier: nullifier,
                     commitment: commitment,
                     txHash: depositTx.hash
                 };
-                
+
             });
 
             it("Mixer Withdraw : Mixer의 토큰 개수는 0 ETH, 후보자는 1 ETH", async function () {
+                const receipt = await hre.ethers.provider.getTransactionReceipt(proofElements.txHash);
+                if(!receipt){ throw "empty-receipt"; }
+
+                const log = receipt.logs[1];
+                // console.log(log)
+
+                const tornadoArtifact = await hre.artifacts.readArtifact("Tornado");
+
+                // ABI 추출
+                const tornadoABI = tornadoArtifact.abi;
+              
+                // 인터페이스 생성
+                const tornadoInterface = new ethers.Interface(tornadoABI);
+              
+                const decodedData = tornadoInterface.decodeEventLog("Deposit", log.data, log.topics); 
                 
+
+                // 누구에게 보낼지 선택
+                // cadidate.address
+
+                const proofInput = {
+                    "root": $u.BNToDecimal(decodedData.root),
+                    "nullifierHash": proofElements.nullifierHash,
+                    "recipient": $u.BNToDecimal(candidate.address),
+                    "secret": $u.BN256ToBin(proofElements.secret).split(""),
+                    "nullifier": $u.BN256ToBin(proofElements.nullifier).split(""),
+                    "hashPairings": decodedData.hashPairings.map((n) => ($u.BNToDecimal(n))),
+                    "hashDirections": decodedData.pairDirection
+                };
+
+                const withdrawPath = path.join(__dirname, '../zkp/withdraw.wasm');
+                const setupPath = path.join(__dirname, '../zkp/setup_final.zkey');
+                const { proof, publicSignals } = await SnarkJS.groth16.fullProve(proofInput, withdrawPath, setupPath);
+
+                const callInputs = [
+                    proof.pi_a.slice(0, 2).map($u.BN256ToHex),
+                    proof.pi_b.slice(0, 2).map((row) => ($u.reverseCoordinate(row.map($u.BN256ToHex)))),
+                    proof.pi_c.slice(0, 2).map($u.BN256ToHex),
+                    publicSignals.slice(0, 2).map($u.BN256ToHex)
+                ];
+                
+                // console.log(callInputs);
+
+                
+                const tx = await tornado.connect(layer).withdraw(...callInputs, token.target, candidate.address);
+                
+                
+                await expect(await token.balanceOf(candidate.address)).to.equal(ethers.parseEther("1"));
+                await expect(await token.balanceOf(tornado.target)).to.equal(ethers.parseEther("0"));
             });
 
 

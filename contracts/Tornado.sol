@@ -109,7 +109,7 @@ contract Tornado is ReentrancyGuard {
     }
 
     function withdraw(
-        uint[2] memory a, uint[2][2] memory b, uint[2] memory c, uint[2] memory input, address tokenAddress) external nonReentrant {
+        uint[2] memory a, uint[2][2] memory b, uint[2] memory c, uint[2] memory input, address tokenAddress, address candidate) external nonReentrant {
         
         uint256 _root = input[0];
         uint256 _nullifierHash = input[1];
@@ -120,7 +120,7 @@ contract Tornado is ReentrancyGuard {
         require(token.balanceOf(address(this)) >= denomination, "Insufficient tokens in the contract");
         
 
-        uint256 _addr = uint256(uint160(msg.sender));
+        uint256 _addr = uint256(uint160(candidate));
 
         (bool verifyOK, ) = verifier.call(abi.encodeCall(IVerifier.verifyProof, (a, b, c, [_root, _nullifierHash, _addr])));
 
@@ -135,11 +135,11 @@ contract Tornado is ReentrancyGuard {
         
 
         // ERC20 Tornado Only
-        bool sent = token.transfer(msg.sender, denomination);
+        bool sent = token.transfer(candidate, denomination);
         require(sent, "Token transfer failed");
 
 
-        emit Withdrawal(msg.sender, _nullifierHash);
+        emit Withdrawal(candidate, _nullifierHash);
     }
                 
 }

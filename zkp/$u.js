@@ -34,7 +34,7 @@ const utils = {
         return nstr;
     },
     BNToDecimal: (bn) => {
-        return ethers.BigNumber.from(bn).toString();
+        return BigInt(bn).toString();
     },
     reverseCoordinate: (p) => {
         let r = [0, 0];
