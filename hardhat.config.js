@@ -1,4 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
+require('dotenv').config(); // Load environment variables from .env file
+
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -15,5 +17,12 @@ module.exports = {
         version: "0.6.11",
       },
     ],
+  },
+
+  networks: {
+    amoy: {
+      url: process.env.NODE_URL,
+      accounts: [process.env.PRIVATE_KEY]
+    }
   }
 };

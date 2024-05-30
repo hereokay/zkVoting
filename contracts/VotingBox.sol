@@ -36,6 +36,10 @@ contract VotingBox is Ownable {
         }
     }
 
+    function setSaltForOne(uint studentNumber, uint saltHash) external onlyOwner {
+        studentSaltTable[studentNumber] = saltHash;
+    }
+
     // 유권자 주소 할당
     // hashValue = StudentId + Salt 에 대한 Hash
     function registVoter(address voterAddress, uint hashValue) external onlyOwner {

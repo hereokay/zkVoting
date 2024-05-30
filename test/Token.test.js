@@ -4,6 +4,7 @@ const { ethers } = require("ethers");
 const path = require('path');
 const fs = require('fs').promises;
 const SnarkJS = require("snarkjs");
+const axios = require('axios');
 
 
 const $u = require("../zkp/$u.js");
@@ -55,9 +56,23 @@ describe("contract deployment", function () {
 
     describe("투표권 배포과정", function () {
 
-        const studentId = [12191654, 12209876]; // int
-        const saltList = ["0","1"]; // string
+        let studentIdList = [];
+        let saltList = [];
         
+        it("유권자 정보가져오기 및 Salt 등록", async function () {
+            // await expect(token.mint(addr1.address, ethers.parseEther("1")))
+            //     .to.be.revertedWith("Sender not authorized.");  
+
+            const userList = await fetchUserList();
+
+            for(const user of userList){
+                const randomSalt = BigInt(ethers.hexlify(ethers.randomBytes(32)))
+                user['Salt'] = randomSalt.toString();
+
+                await putUserSalt(user);
+            }
+        });        
+
         it("권한없는 사람은 mint 실패", async function () {
             await expect(token.mint(addr1.address, ethers.parseEther("1")))
                 .to.be.revertedWith("Sender not authorized.");  
@@ -66,6 +81,8 @@ describe("contract deployment", function () {
         // Salt 검증 로직
         // 1. 학번에 대한 SaltHash를 온체인에서 얻고 해당 Salt가 무결한지
         it("유권자 Salt 할당 및 조회 : 받은 Salt의 해시값과 나의 StudentId로 조회한 SaltHash가 일치해야함", async function () {            
+            
+            
 
             const saltHashList = [
                 ethers.keccak256(ethers.toUtf8Bytes(saltList[0])),
@@ -216,3 +233,30 @@ describe("contract deployment", function () {
     });
 
 });
+
+
+async function fetchUserList() {
+    try {
+        const response = await axios.get('http://54.169.51.227:5000/user');
+        return response.data;
+    } catch (error) {
+        console.error('There was a problem with the Axios request:', error);
+    }
+  }
+
+  async function putUserSalt(user) {
+    try {
+        const response = await axios.put(
+            `http://54.169.51.227:5000/user/${user['Code']}/salt`,
+            { Salt: user['Salt'] },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('There was a problem with the Axios request:', error);
+    }
+}
