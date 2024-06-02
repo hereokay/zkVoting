@@ -74,9 +74,17 @@ describe("contract deployment", function () {
             userList[0]['Address'] = addr1.address;
             await putUserAddress(user);
 
+            
 
         });
 
+        it("후보자 온체인 address 등록", async function () {
+            
+            // candidate
+            await votingBox.addCandidate(1, candidate.address);
+        });
+
+        
         
         // 
 

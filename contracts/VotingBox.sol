@@ -11,7 +11,7 @@ interface IERC20 {
 contract VotingBox is Ownable {
 
     address[] public voterList; // 조회용
-    mapping (uint => uint256[2]) public mataAddressTable; // 후보자 번호 -> 메타 address 얻기
+    mapping (uint => address) public candidateTable; // 후보자 번호 -> 메타 address 얻기
     mapping (uint => uint) public studentSaltTable; // 학번에 대한 salt 해시값 테이블
     mapping (uint => address) public addressTable; // 해시값을 통해 주소를 기록
     IERC20 public token;
@@ -21,8 +21,8 @@ contract VotingBox is Ownable {
     }
 
     // 후보자 추가
-    function addCandidate(uint candidateNumber, uint[2] memory metaAddress) external onlyOwner {
-        mataAddressTable[candidateNumber] = metaAddress;
+    function addCandidate(uint candidateNumber, address onchainAddress) external onlyOwner {
+        candidateTable[candidateNumber] = onchainAddress;
     }
 
     // 유권자 Salt 설정
