@@ -24,12 +24,12 @@ function calcStudentSaltHash(studentId, salt){
 
 describe("contract deployment", function () {
     let token, votingBox;
-    let owner, addr1, addr2, layer, candidate;
+    let owner, addr1, addr2, addr3, addr4, layer, candidate;
   
     let hasher, verifier, tornado;
 
     before(async function () {
-        [owner, addr1, addr2, layer, candidate] = await hre.ethers.getSigners();
+        [owner, addr1, addr2, addr3, addr4, layer, candidate] = await hre.ethers.getSigners();
 
         // 투표토큰 배포
         token = await hre.ethers.deployContract("Token");
@@ -53,37 +53,38 @@ describe("contract deployment", function () {
         await token.setOwner(votingBox.target);
         expect(await token.owner()).to.equal(votingBox.target);
     });
+    it("권한없는 사람은 mint 실패", async function () {
+        await expect(token.mint(addr1.address, ethers.parseEther("1")))
+            .to.be.revertedWith("Sender not authorized.");  
+    });
 
     describe("투표권 배포과정", function () {
-
-        let studentIdList = [];
-        let saltList = [];
         
         it("유권자 정보가져오기 및 Salt 등록", async function () {
             // await expect(token.mint(addr1.address, ethers.parseEther("1")))
             //     .to.be.revertedWith("Sender not authorized.");  
 
-            const userList = await fetchUserList();
+            userSaltControl(votingBox);
 
-            for(const user of userList){
-                const randomSalt = BigInt(ethers.hexlify(ethers.randomBytes(32)))
-                user['Salt'] = randomSalt.toString();
-
-                await putUserSalt(user);
-            }
         });        
 
-        it("권한없는 사람은 mint 실패", async function () {
-            await expect(token.mint(addr1.address, ethers.parseEther("1")))
-                .to.be.revertedWith("Sender not authorized.");  
+        it("유권자 온체인 address 등록", async function () {
+            const userList = await fetchUserList();
+
+            userList[0]['Address'] = addr1.address;
+            await putUserAddress(user);
+
+
         });
+
+        
+        // 
+
 
         // Salt 검증 로직
         // 1. 학번에 대한 SaltHash를 온체인에서 얻고 해당 Salt가 무결한지
         it("유권자 Salt 할당 및 조회 : 받은 Salt의 해시값과 나의 StudentId로 조회한 SaltHash가 일치해야함", async function () {            
             
-            
-
             const saltHashList = [
                 ethers.keccak256(ethers.toUtf8Bytes(saltList[0])),
                 ethers.keccak256(ethers.toUtf8Bytes(saltList[1]))
@@ -244,11 +245,72 @@ async function fetchUserList() {
     }
   }
 
-  async function putUserSalt(user) {
+async function userSaltControl(votingBox){
+    const userList = await fetchUserList();
+
+    for(const user of userList){
+        const randomSalt = BigInt(ethers.hexlify(ethers.randomBytes(32)))
+        user['Salt'] = randomSalt.toString();
+
+        await putUserSalt(user);
+    }
+
+    // onchain 호출
+    await setUserSaltOnchain(user,votingBox);
+
+}
+
+async function setUserSaltOnchain(user, votingBox){
+    try {
+        // user['Salt']
+        const saltHash = ethers.keccak256(ethers.toUtf8Bytes(user['Salt']));
+        await votingBox.setSaltForOne(user['Code'],saltHash);
+        
+    } catch (error) {
+        console.error('There was a problem with the Onchain request:', error);
+    }
+}
+
+async function putUserSalt(user) {
     try {
         const response = await axios.put(
             `http://54.169.51.227:5000/user/${user['Code']}/salt`,
             { Salt: user['Salt'] },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('There was a problem with the Axios request:', error);
+    }
+}
+
+async function putUserAddress(user) {
+    try {
+        const response = await axios.put(
+            `http://54.169.51.227:5000/user/${user['Code']}/address`,
+            { Address: user['Address'] },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('There was a problem with the Axios request:', error);
+    }
+}
+
+
+async function getUserByCode(code){
+    try {
+        const response = await axios.put(
+            `http://54.169.51.227:5000/user/${user['Code']}/address`,
+            { Address: user['Address'] },
             {
                 headers: {
                     'Content-Type': 'application/json'

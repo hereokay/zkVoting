@@ -29,11 +29,7 @@ async function main() {
     const tornado = await hre.ethers.getContractAt("Tornado", Tornadoaddress);
 
 
-
-    // 
-    await token.setOwner(votingBox.target);
     
-
 
 
 }
