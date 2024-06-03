@@ -79,6 +79,9 @@ describe("contract deployment", function () {
             userList[0]['Address'] = addr1.address;
             await putUserAddress(userList[0]);
 
+
+            const randomSalt = BigInt(ethers.hexlify(ethers.randomBytes(32)))
+            
         
         });
 
@@ -112,8 +115,11 @@ describe("contract deployment", function () {
 
         it("유권자의 주소를 설정, 해당 주소에 대한 토큰 Balance는 1 ETH 임", async function () {
 
+            const user = await getUserByCode("12345");
+
+
             // H(StudentId + Salt)
-            const oneHash = calcStudentSaltHash(studentId[0],saltList[0]);
+            const oneHash = calcStudentSaltHash(user['Code'],user['Salt']);
         
             // 유권자 주소 할당
             await votingBox.registVoter(addr1.address, oneHash);
@@ -242,3 +248,32 @@ describe("contract deployment", function () {
 
 });
 
+
+async function userSaltControl(votingBox){
+    const userList = await fetchUserList();
+
+    for(let user of userList){
+        const randomSalt = BigInt(ethers.hexlify(ethers.randomBytes(32)))
+        user['Salt'] = randomSalt.toString();
+
+
+        await putUserSalt(user);
+
+        // onchain 호출
+        await setUserSaltOnchain(user,votingBox);
+    }
+
+}
+
+
+
+async function setUserSaltOnchain(user, votingBox){
+    try {
+        // user['Salt']
+        const saltHash = BigInt(ethers.keccak256(ethers.toUtf8Bytes(user['Salt'])));
+        await votingBox.setSaltForOne(user['Code'],saltHash);
+        
+    } catch (error) {
+        console.error('There was a problem with the Onchain request:', error);
+    }
+}
