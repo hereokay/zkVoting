@@ -51,14 +51,8 @@ async function putUserAddress(user) {
 
 async function getUserByCode(code){
     try {
-        const response = await axios.put(
-            `${ip}/user/${user['Code']}/address`,
-            { Address: user['Address'] },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
+        const response = await axios.get(
+            `${ip}/user/${code}`,
         );
         return response.data;
     } catch (error) {

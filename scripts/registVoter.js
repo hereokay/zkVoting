@@ -46,6 +46,7 @@ async function userSaltControl(votingBox){
         const randomSalt = BigInt(ethers.hexlify(ethers.randomBytes(32)))
         user['Salt'] = randomSalt.toString();
 
+
         await putUserSalt(user);
 
         // onchain 호출
