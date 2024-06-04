@@ -95,21 +95,18 @@ describe("contract deployment", function () {
         // 1. 학번에 대한 SaltHash를 온체인에서 얻고 해당 Salt가 무결한지
         it("유권자 Salt 할당 및 조회 : 받은 Salt의 해시값과 나의 StudentId로 조회한 SaltHash가 일치해야함", async function () {            
             
-            const saltHashList = [
-                ethers.keccak256(ethers.toUtf8Bytes(saltList[0])),
-                ethers.keccak256(ethers.toUtf8Bytes(saltList[1]))
-            ];
+            const user = await getUserByCode('12345');
+            const saltHash = ethers.keccak256(ethers.toUtf8Bytes(user['Salt']));
+
+
             
 
             // 학번에 대한 Salt 할당
-            await votingBox.setSalt(studentId,[
-                saltHashList[0],
-                saltHashList[1]
-            ]);
+            await votingBox.setSaltForOne(user['Code'],saltHash);
 
             // 학번에 대한 Salt 해시 조회 (재확인)
-            expect(await votingBox.studentSaltTable(studentId[0])).to.equal(
-                saltHashList[0]
+            expect(await votingBox.studentSaltTable(user['Code'])).to.equal(
+                saltHash
             );
         });
 
@@ -134,7 +131,10 @@ describe("contract deployment", function () {
         // Salt 검증 로직
         // 2. student와 salt에 대한것으로 주소 확인
         it("유권자 Salt 할당 및 조회: StduentId와 salt를 해시한 값으로 계정주소를 조회하면 나의 주소가 리턴되어야 함", async function () {
-            const oneHash = calcStudentSaltHash(studentId[0],saltList[0]);
+            
+            const user = await getUserByCode("12345");
+
+            const oneHash = calcStudentSaltHash(user['Code'],user['Salt']);
             const retAddress = await votingBox.addressTable(oneHash);
 
             await expect(retAddress).is.equal(addr1.address);
@@ -233,17 +233,9 @@ describe("contract deployment", function () {
                 await expect(await token.balanceOf(tornado.target)).to.equal(ethers.parseEther("0"));
             });
 
-
-
-
         
         });
 
-
-
-// note : eyJudWxsaWZpZXJIYXNoIjoiMTk1Mjc0MTk1NzIxMjYxMTk0NjI1OTk1NzY3NDIxNjQ1Mzk0MjUzMzcyMDY3NDk4Njc0NTkxNTA1NTAxNDQ4NTM4MjExNTA1NzIxMDciLCJzZWNyZXQiOiI1Mzk1MTUyNjEyOTc2NDA4NjY5ODIwMDQ3MDc4NzM5MTc5NzMwMzg1NzYwODU4ODkzODE3MDAwMTU0MTg5MzAwOTIyMTEzMzQyNjAwNyIsIm51bGxpZmllciI6IjQwMDM0NTQ0ODkxMDUzNjQ4NTQxNzI3NDU1OTQwNjI2ODIxNzU5NjA2ODgwMDY3NDAwNjg2NDY0MTA4MzU1NzA4MDQ2OTk2MTQyOTc1IiwiY29tbWl0bWVudCI6IjE2ODA1NTMwNjY5NjEzMjcyMTU0NDM0Mjc3MjYwNDkxMjU5ODk0MjkwNzg3NDY4MTQyODg3ODMwMjY5MzI3ODg0NjUwODcwOTU1NTI4IiwidHhIYXNoIjoiMHhiZmMwMmJkODAzZmNhMWY5YjA0YzhmM2JkZTFjNTZjMzIxMThmNzU2OGYxZDUyODhlMWI4NjU0NjAxNTJkNjBmIn0=
-// commitment : "16805530669613272154434277260491259894290787468142887830269327884650870955528"
-        
     });
 
 });
