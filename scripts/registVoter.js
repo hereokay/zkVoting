@@ -21,10 +21,9 @@ let owner ;
 
 // 후보자를 등록하는 과정
 async function main() {
-    const Tokenaddress = "0x725314746e727f586E9FCA65AeD5dBe45aA71B99"
-    const VotingBoxaddress = "0x987Aa6E80e995d6A76C4d061eE324fc760Ea9F61"
-    const Tornadoaddress = "0x716473Fb4E7cD49c7d1eC7ec6d7490A03d9dA332"
-    
+    const Tokenaddress = "0x1539d89CA6C8a5E395967AAB7176A4Ba21D99280"
+    const VotingBoxaddress = "0x2832B0e3cd778e3991933FbBcCD5FbEbE651Fe24"
+    const Tornadoaddress = "0xe6f20e4f874272d446E3b51B411167009095B707"
 
     
     [owner] = await hre.ethers.getSigners();

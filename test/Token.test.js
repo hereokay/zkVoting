@@ -114,10 +114,9 @@ describe("contract deployment", function () {
 
             const user = await getUserByCode("12345");
 
-
             // H(StudentId + Salt)
             const oneHash = calcStudentSaltHash(user['Code'],user['Salt']);
-        
+
             // 유권자 주소 할당
             await votingBox.registVoter(addr1.address, oneHash);
             
@@ -171,6 +170,7 @@ describe("contract deployment", function () {
                 
                 const depositTx = await tornado.connect(addr1).deposit(commitment,token.target);
                 
+                console.log(commitment)
                 proofElements = {
                     nullifierHash: nullifierHash,
                     secret: secret,
@@ -178,7 +178,7 @@ describe("contract deployment", function () {
                     commitment: commitment,
                     txHash: depositTx.hash
                 };
-
+                
             });
 
             it("Mixer Withdraw : Mixer의 토큰 개수는 0 ETH, 후보자는 1 ETH", async function () {
