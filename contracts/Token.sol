@@ -4,29 +4,34 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-
 contract Token is ERC20 {
 
     address public owner;
-    constructor()
-        ERC20("Token", "VOTE")
-    {
+
+    constructor() ERC20("Token", "VOTE") {
         owner = msg.sender;
     }
 
-    function mint(address to, uint256 amount) public Ownable {
+    function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
 
-    function setOwner(address newOwner) public Ownable {
+    function setOwner(address newOwner) public onlyOwner {
         owner = newOwner;
     }
-    
-      
-    modifier Ownable()
-    {
+
+    function transferFrom(address from, address to, uint256 amount) public override returns (bool) {
+        if (msg.sender != owner) {
+            require(allowance(from, msg.sender) >= amount, "ERC20: transfer amount exceeds allowance");
+            _approve(from, msg.sender, allowance(from, msg.sender) - amount);
+        }
+        
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    modifier onlyOwner() {
         require(msg.sender == owner, "Sender not authorized.");
         _;
     }
-
 }
