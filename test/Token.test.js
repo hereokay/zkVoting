@@ -4,6 +4,7 @@ const { ethers } = require("ethers");
 const path = require('path');
 const fs = require('fs').promises;
 const SnarkJS = require("snarkjs");
+const {parseAbi} = require('viem');
 
 
 
@@ -149,6 +150,8 @@ describe("contract deployment", function () {
             // Mixer에 입금
             it("Mixer Deposit : Mixer의 토큰 개수는 1 ETH, 유권자 0 ETH", async function () {
                 
+
+
                 // approve
                 const approveTx = await token.connect(addr1).approve(tornado.target, ethers.parseEther("1"));
 
@@ -170,7 +173,7 @@ describe("contract deployment", function () {
                 
                 const depositTx = await tornado.connect(addr1).deposit(commitment,token.target);
                 
-                console.log(commitment)
+                //console.log(commitment)
                 proofElements = {
                     nullifierHash: nullifierHash,
                     secret: secret,
@@ -190,8 +193,15 @@ describe("contract deployment", function () {
 
                 const tornadoArtifact = await hre.artifacts.readArtifact("Tornado");
 
+                const tornadoABI = parseAbi([
+                    `function withdraw(uint[2] memory a, uint[2][2] memory b, uint[2] memory c, uint[2] memory input, address tokenAddress, address candidate) external`,
+                    `function deposit(uint256 _commitment, address tokenAddress) external`,
+                    `event Deposit(uint256 root, uint256[10] hashPairings, uint8[10] pairDirection)`,
+                    `event Withdrawal(address to, uint256 nullifierHash)`
+                ])
+
                 // ABI 추출
-                const tornadoABI = tornadoArtifact.abi;
+                // const tornadoABI = tornadoArtifact.abi;
               
                 // 인터페이스 생성
                 const tornadoInterface = new ethers.Interface(tornadoABI);
