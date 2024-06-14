@@ -26,6 +26,7 @@ async function main() {
     tornado = await hre.ethers.deployContract("Tornado", [hasher.target, verifier.target]);
     console.log("Tornado address: ", tornado.target);
 
+    await token.setTornadoAddress(tornado.target);
     await token.setOwner(votingBox.target);
 }
 

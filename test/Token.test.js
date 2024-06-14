@@ -186,12 +186,12 @@ describe("contract deployment", function () {
 
             it("Mixer Withdraw : Mixer의 토큰 개수는 0 ETH, 후보자는 1 ETH", async function () {
                 const receipt = await hre.ethers.provider.getTransactionReceipt(proofElements.txHash);
+                
                 if(!receipt){ throw "empty-receipt"; }
 
                 const log = receipt.logs[1];
                 // console.log(log)
 
-                const tornadoArtifact = await hre.artifacts.readArtifact("Tornado");
 
                 const tornadoABI = parseAbi([
                     `function withdraw(uint[2] memory a, uint[2][2] memory b, uint[2] memory c, uint[2] memory input, address tokenAddress, address candidate) external`,

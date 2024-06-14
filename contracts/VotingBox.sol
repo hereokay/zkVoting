@@ -24,7 +24,7 @@ contract VotingBox is Ownable {
     function addCandidate(uint candidateNumber, address onchainAddress) external onlyOwner {
         candidateTable[candidateNumber] = onchainAddress;
     }
-
+    
     // 유권자 Salt 설정
     function setSalt(uint[] memory studentNumberList, uint[] memory saltHash) external onlyOwner{
         require(studentNumberList.length == saltHash.length, "array length error");
@@ -72,3 +72,12 @@ contract VotingBox is Ownable {
 
 
 }
+
+
+/*
+
+mapping (uint => address) public candidateTable; // 후보자 번호 -> 메타 address 얻기
+'function studentSaltTable(uint) public view returns (uint)',
+'function candidateTable(uint) public view returns (address)',
+
+ */

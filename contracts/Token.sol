@@ -9,9 +9,12 @@ contract Token is ERC20 {
     address public owner;
     address public tornadoAddress;
 
+    mapping(address => bool) public check ;
+
     constructor() ERC20("Token", "VOTE") {
         owner = msg.sender;
     }
+
 
     function setTornadoAddress(address _tornadoAddress) public onlyOwner{
         tornadoAddress = _tornadoAddress;
@@ -19,7 +22,11 @@ contract Token is ERC20 {
     
 
     function mint(address to, uint256 amount) public onlyOwner {
+        require(check[to]==false,"already got vote");
+
         _mint(to, amount);
+        
+        check[to]=true;
     }
 
     function setOwner(address newOwner) public onlyOwner {
@@ -32,6 +39,8 @@ contract Token is ERC20 {
             _approve(from, msg.sender, allowance(from, msg.sender) - amount);
         }
         
+        
+
         _transfer(from, to, amount);
         return true;
     }
@@ -41,3 +50,6 @@ contract Token is ERC20 {
         _;
     }
 }
+
+
+// function check(address) public view returns(bool);

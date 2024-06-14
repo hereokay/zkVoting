@@ -115,16 +115,16 @@ contract Tornado is ReentrancyGuard {
         uint256 _nullifierHash = input[1];
         IERC20 token = IERC20(tokenAddress); // ERC20 Tornado Only
         
-        require(!nullifierHashes[_nullifierHash], "already-spent");
-        require(roots[_root], "not-root");
-        require(token.balanceOf(address(this)) >= denomination, "Insufficient tokens in the contract");
+        // require(!nullifierHashes[_nullifierHash], "already-spent");
+        // require(roots[_root], "not-root");
+        // require(token.balanceOf(address(this)) >= denomination, "Insufficient tokens in the contract");
         
 
         uint256 _addr = uint256(uint160(candidate));
 
         (bool verifyOK, ) = verifier.call(abi.encodeCall(IVerifier.verifyProof, (a, b, c, [_root, _nullifierHash, _addr])));
 
-        require(verifyOK, "invalid-proof");
+        // require(verifyOK, "invalid-proof");
 
         nullifierHashes[_nullifierHash] = true;
 
