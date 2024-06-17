@@ -19,6 +19,8 @@ contract Tornado is ReentrancyGuard {
     address verifier;
     Hasher hasher;
 
+    mapping(address => mapping(address => bool)) public check ;
+
     uint8 public treeLevel = 10;
     uint256 public denomination = 1 ether;
 
@@ -54,6 +56,8 @@ contract Tornado is ReentrancyGuard {
 
     function deposit(uint256 _commitment, address tokenAddress) external nonReentrant {
         // require(msg.value == denomination, "incorrect-amount");  -> ETH Tornado Only
+        require(check[msg.sender][tokenAddress]==false,"already got vote");
+
 
         require(!commitments[_commitment], "existing-commitment");
         require(nextLeafIdx < 2 ** treeLevel, "tree-full");
@@ -105,6 +109,7 @@ contract Tornado is ReentrancyGuard {
         nextLeafIdx += 1;
 
         commitments[_commitment] = true;
+        check[msg.sender][tokenAddress]=true;
         emit Deposit(newRoot, hashPairings, hashDirections);
     }
 

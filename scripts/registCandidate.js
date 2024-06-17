@@ -18,9 +18,11 @@ const {
 
 // 후보자를 등록하는 과정
 async function main() {
-  const Tokenaddress = "0x2ead8675Ff1122dCc53B0Ce7C45bf956e289A13c"
-  const VotingBoxaddress = "0x1f39991E1C674f9072E184F99faa8e0AF502E86F"
-  const Tornadoaddress = "0x7c0794FfAa1cF32bF09621FceC8314236b76C0A1"
+    const Tokenaddress = "0x599Aac16ade739afbEE573DCf7349152632d6f8A"
+    const VotingBoxaddress = "0x6a779Ee772D8244C34BdDd9d912cc7932D297620"
+    const Tornadoaddress = "0x0AD76d72c849991178B4A98449eECE90859542Db"
+
+    
 
     const cadidateList = [
       '0x5BD63a7ECc13b955C4F57e3F12A64c10263C14c1',

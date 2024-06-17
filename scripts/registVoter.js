@@ -19,11 +19,19 @@ const {
 const end_point = process.env.END_POINT;
 let owner ;
 
+/*
+Token address:  0x599Aac16ade739afbEE573DCf7349152632d6f8A
+VotingBox address:  0x6a779Ee772D8244C34BdDd9d912cc7932D297620
+Hasher address:  0x40b4a5A6CF0c572256825184b14CE184543357d4
+Verifier address:  0xDbef040a20Db6744b5035E96B8Ce4043C4925733
+Tornado address:  0x0AD76d72c849991178B4A98449eECE90859542Db
+*/
+
 // 후보자를 등록하는 과정
 async function main() {
-    const Tokenaddress = "0x2ead8675Ff1122dCc53B0Ce7C45bf956e289A13c"
-    const VotingBoxaddress = "0x1f39991E1C674f9072E184F99faa8e0AF502E86F"
-    const Tornadoaddress = "0x7c0794FfAa1cF32bF09621FceC8314236b76C0A1"
+    const Tokenaddress = "0x599Aac16ade739afbEE573DCf7349152632d6f8A"
+    const VotingBoxaddress = "0x6a779Ee772D8244C34BdDd9d912cc7932D297620"
+    const Tornadoaddress = "0x0AD76d72c849991178B4A98449eECE90859542Db"
     [owner] = await hre.ethers.getSigners();
     
 
@@ -45,9 +53,10 @@ async function userSaltControl(votingBox){
 
 
         await putUserSalt(user);
-
+        
         // onchain 호출
         await setUserSaltOnchain(user,votingBox);
+        
     }
 
 }
@@ -56,7 +65,8 @@ async function setUserSaltOnchain(user, votingBox){
     try {
         // user['Salt']
         const saltHash = BigInt(ethers.keccak256(ethers.toUtf8Bytes(user['Salt'])));
-        await votingBox.setSaltForOne(user['Code'],saltHash);
+        const txHash= await votingBox.setSaltForOne(user['Code'],saltHash);
+        console.log(`${txHash} : ${user['Code']} : ${saltHash} 등록완료`)
         
     } catch (error) {
         console.error('There was a problem with the Onchain request:', error);
